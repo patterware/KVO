@@ -21,26 +21,7 @@
                  onObject:object
                  callback:^(NSDictionary *change) {
         callback(change[NSKeyValueChangeNewKey]);
-    }];
-}
-
--(void)kvoWatchKeypath:(NSString *)keypath
-              onObject:(id)object
-              callback:(KVOKeypathChangedCallback)callback
-{
-    [self kvoWatchKeypath:keypath
-                 onObject:object
-                 callback:callback
-                  options:NSKeyValueObservingOptionNew];
-}
-
--(id)kvoWatchKeypath:(NSString *)keypath
-            callback:(KVOKeypathChangedCallback)callback
-             options:(NSKeyValueObservingOptions)options
-{
-    KVOWatcher *watcher = [KVOWatcher watcherForKeypath:keypath object:self callback:callback];
-    [self addObserver:watcher forKeyPath:keypath options:options context:nil];
-    return watcher;
+    } options:NSKeyValueObservingOptionNew];
 }
 
 -(void)kvoWatchKeypath:(NSString *)keypath
@@ -50,7 +31,7 @@
 {
     NSMutableDictionary *watchers = [self watchersForObject:object];
     NSAssert(!watchers[keypath], @"already watching keypath");
-    id watcher = [self kvoWatchKeypath:keypath callback:callback options:options];
+    id watcher = [KVOWatcher watcherForKeypath:keypath object:object callback:callback options:options];
     watchers[keypath] = watcher;
 }
 

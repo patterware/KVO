@@ -12,47 +12,56 @@
 #define STRING1 @"apple"
 #define STRING2 @"banana"
 
-@interface KVOTests : XCTestCase
+@interface KVOTestObject : NSObject
 @property (nonatomic, getter = isPropertySet) BOOL propertySet;
 @property (nonatomic) NSString *testString;
+@end
+
+@implementation KVOTestObject
+@end
+
+@interface KVOTests : XCTestCase
 @end
 
 @implementation KVOTests
 
 -(void) testObserveNewValue {
-    __block BOOL propertySet = self.isPropertySet;
-    [self kvoWatchNewValueOnKeypath:@"propertySet" object:self callback:^(NSNumber *newValue) {
+    KVOTestObject *test = [[KVOTestObject alloc] init];
+    __block BOOL propertySet = test.isPropertySet;
+    [self kvoWatchNewValueOnKeypath:@"propertySet" object:test callback:^(NSNumber *newValue) {
         propertySet = [newValue boolValue];
     }];
-    self.propertySet = !propertySet;
-    XCTAssertEqual(propertySet, self.propertySet, @"wrong value!");
-    [self kvoStopWatchingKeypath:@"propertySet" onObject:self];
+    test.propertySet = !propertySet;
+    XCTAssertEqual(propertySet, test.propertySet, @"wrong value!");
+    [self kvoStopWatchingKeypath:@"propertySet" onObject:test];
 }
 
 -(void) testObserverStops {
-    __block BOOL propertySet = self.isPropertySet;
+    KVOTestObject *test = [[KVOTestObject alloc] init];
+    __block BOOL propertySet = test.isPropertySet;
     @autoreleasepool {
-        [self kvoWatchNewValueOnKeypath:@"propertySet" object:self callback:^(NSNumber *newValue) {
+        [self kvoWatchNewValueOnKeypath:@"propertySet" object:test callback:^(NSNumber *newValue) {
             propertySet = [newValue boolValue];
         }];
-        [self kvoStopWatchingKeypath:@"propertySet" onObject:self];
+        [self kvoStopWatchingKeypath:@"propertySet" onObject:test];
     }
-    self.propertySet = !propertySet;
-    XCTAssertNotEqual(propertySet, self.propertySet, @"not released!");
+    test.propertySet = !propertySet;
+    XCTAssertNotEqual(propertySet, test.propertySet, @"not released!");
 }
 
 -(void) testObserveWithOptions {
-    self.testString = STRING1;
+    KVOTestObject *test = [[KVOTestObject alloc] init];
+    test.testString = STRING1;
     __block NSUInteger callCount = 0;
-    __block NSString *string = self.testString;
-    [self kvoWatchKeypath:@"testString" onObject:self callback:^(NSDictionary *change) {
+    __block NSString *string = test.testString;
+    [self kvoWatchKeypath:@"testString" onObject:test callback:^(NSDictionary *change) {
         callCount++;
         string = change[NSKeyValueChangeNewKey];
     } options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionPrior];
-    self.testString = STRING2;
-    XCTAssertEqualObjects(string, self.testString, @"wrong string");
+    test.testString = STRING2;
+    XCTAssertEqualObjects(string, test.testString, @"wrong string");
     XCTAssertEqual(callCount, 3u, @"wrong call count");
-    [self kvoStopWatchingKeypath:@"testString" onObject:self];
+    [self kvoStopWatchingKeypath:@"testString" onObject:test];
 }
 
 @end

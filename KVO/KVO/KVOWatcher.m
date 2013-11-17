@@ -16,16 +16,17 @@
 
 @implementation KVOWatcher
 
-+(instancetype)watcherForKeypath:(NSString *)keypath object:(id)object callback:(KVOKeypathChangedCallback)callback {
-    return [[self alloc] initWithKeypath:keypath object:object callback:callback];
++(instancetype)watcherForKeypath:(NSString *)keypath object:(id)object callback:(KVOKeypathChangedCallback)callback options:(NSKeyValueObservingOptions)options {
+    return [[self alloc] initWithKeypath:keypath object:object callback:callback options:options];
 }
 
--(id)initWithKeypath:(NSString *)keypath object:(id)object callback:(KVOKeypathChangedCallback)callback {
+-(id)initWithKeypath:(NSString *)keypath object:(id)object callback:(KVOKeypathChangedCallback)callback options:(NSKeyValueObservingOptions)options {
     NSAssert(keypath && object && callback, @"missing required KVOWatcher argument");
     if (self = [self init]) {
         _keypath = keypath;
         _watching = object;
         _callback = callback;
+        [object addObserver:self forKeyPath:keypath options:options context:nil];
     }
     return self;
 }
